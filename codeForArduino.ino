@@ -36,7 +36,7 @@ void setup()
 {
   pinMode(LED_BUILTIN, OUTPUT);
   Serial.begin(9600);
-  //Blynk.begin(auth, ssid, pass);
+  Blynk.begin(auth, ssid, pass);
  
   
   SPI.begin();
