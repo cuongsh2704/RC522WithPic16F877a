@@ -9,7 +9,7 @@
 
 
 
-#pragma config FOSC = HS        // Oscillator Selection bits (XT oscillator)
+#pragma config FOSC = HS        // Oscillator Selection bits (HS oscillator)
 #pragma config WDTE = OFF       // Watchdog Timer Enable bit (WDT disabled)
 #pragma config PWRTE = ON       // Power-up Timer Enable bit (PWRT enabled)
 #pragma config BOREN = ON       // Brown-out Reset Enable bit (BOR enabled)
@@ -19,19 +19,72 @@
 #pragma config CP = OFF         // Flash Program M
 
 #define _XTAL_FREQ 20000000      // PIC frequency (Hz))
-
+#define PWM_max 500
 
 
 char data_r, data_s;
 
 
+void Rotation0()   // 0 degree
+{
+unsigned int i;
+for(i=0;i<50;i++)
+{
+    RD0 = 1;      //connected to RB0, Motor OFF
+    __delay_us(1500);     //delay of 800us
+    RD0 = 0;      //connected to RB0, Motor ON
+    __delay_us(18500);   //delay of 19200us
+}
+}
 
+void Rotation90() //180 Degree
+{
+unsigned int i;
+for(i=0;i<50;i++)
+{
+    RD0 = 1;
+__delay_us(4000); // delay of 2000us
+    RD0 = 0;
+__delay_us(16000); //delay of 18000us
+}
+}
+void Rotation180() //180 Degree
+{
+unsigned int i;
+for(i=0;i<50;i++)
+{
+    RD0 = 1;
+__delay_us(1000); // delay of 2000us
+    RD0 = 0;
+__delay_us(19000); //delay of 18000us
+}
+}
+
+void setPWM_DutyCycle(uint16_t DC){
+    // Write to CCP1CON<5:4>
+    CCP1Y = DC & (1<<0);
+    CCP1X = DC & (1<<1);
+    // Write to CCPR1L register
+    CCPR1L = DC >> 2;
+}
 
 void main(void) {
     TRISA = 0x00;
     TRISD = 0x00;
     PORTA = 0x00;
     
+    // -------------[Configuration part]----------------
+    // Configure the CCP1 module for PWM operation
+    CCP1M2 = 1;
+    CCP1M3 = 1;
+    // Set CCP1 pin as output
+    TRISC2 = 0;
+    // Set the PWM period 
+    PR2 = 124;
+    // Set the Timer2 prescaler value and enable Timer2
+    T2CKPS0 = 1;
+    T2CKPS1 = 0;
+    TMR2ON = 1;
     EEPROM_Write(1, UID1);
    
     
@@ -41,16 +94,20 @@ void main(void) {
     while(1){
         data_r = UART_Read();
         if(EEPROM_Check(data_r))  
-            {
+            {   
                 TXREG = data_r;
-//             TRMT = 1;
-                   RA3 = 1;
-                   __delay_ms(1000);
-                   RA3 = 0;
+                
+                
+                 
+                 Rotation90(); //90 Degree
+                 
+                 Rotation0();
+                
+//             
                   
                 
-            }
-       
+            };
+        
         
        
     } 
