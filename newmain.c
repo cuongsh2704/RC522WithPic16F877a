@@ -69,6 +69,7 @@ __delay_us(19000); //delay of 18000us
 void __interrupt() ISR(void){
 
     if(RCIF == 1){
+        
         data_r = RCREG;
         RCIF = 0;
     }
@@ -81,10 +82,9 @@ void main(void) {
     PORTA = 0x00;
     
     INTEDG = 1;                 // Interrupt edge config bit (HIGH value means interrupt occurs every rising edge)
-    
     RCIE = 1;
- 
     PEIE = 1;
+    GIE = 1;
     EEPROM_Write(1, UID1);
    
     

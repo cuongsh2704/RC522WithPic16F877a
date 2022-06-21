@@ -21,13 +21,14 @@ char auth[] =  BLYNK_AUTH_TOKEN;
 
 // Your WiFi credentials.
 // Set password to "" for open networks.
-char ssid[] = "Master";
-char pass[] = "0123456789";
+char ssid[] = "talos";
+char pass[] = "19270420";
 
 
 char dataCard;
 char data_r, data_s;
 int state;
+int button;
 //config for CARD
  MFRC522 mfrc522(SS, RST);
  MFRC522::MIFARE_Key key;
@@ -35,33 +36,28 @@ int state;
 void setup()
 {
   pinMode(LED_BUILTIN, OUTPUT);
+  pinMode(D2, OUTPUT);
   Serial.begin(9600);
   Blynk.begin(auth, ssid, pass);
  
   
   SPI.begin();
   mfrc522.PCD_Init();// khoi tao rc522
- 
+  Serial.println("start");
   
   }
-
-void loop(){  
-  // Look for new cards
-
-  if(Serial.available() > 0)
-  {
-    
+BLYNK_WRITE(V1){
+  button = param.asInt();
   
-    data_r = Serial.read();
-    if (data_r == UID_True){
-      Blynk.virtualWrite(V0, dataCard);
-      digitalWrite(LED_BUILTIN, HIGH);
-      delay(1000);
-      digitalWrite(LED_BUILTIN, LOW);
-     
-      }
-    
-    }
+}
+void loop(){  
+  // Look for new cards]
+  
+  Blynk.run();
+  BLYNK_WRITE(V1);
+  digitalWrite(D2, button);
+ 
+
  if(!mfrc522.PICC_IsNewCardPresent())
  {
    return;
@@ -74,10 +70,32 @@ void loop(){
  //gui UID cua the
  dataCard = mfrc522.uid.uidByte[0];
  Serial.write(dataCard);
- 
+ if(dataCard == UID_True){
+  
+  Blynk.virtualWrite(V0, "Cuong dang login");
+} else
+{
+  Blynk.virtualWrite(V0, "trom !!");
+
+  }
  
    mfrc522.PICC_HaltA();
+
+   if(Serial.available() > 0)
+  {
+    
   
+    data_r = Serial.read();
+    
+    if (data_r == UID_True){
+     
+      digitalWrite(LED_BUILTIN, HIGH);
+      delay(1000);
+      digitalWrite(LED_BUILTIN, LOW);
+     
+      }
+    
+    }
    
 
 }
