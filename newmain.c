@@ -60,31 +60,31 @@ __delay_us(19000); //delay of 18000us
 }
 }
 
-void setPWM_DutyCycle(uint16_t DC){
-    // Write to CCP1CON<5:4>
-    CCP1Y = DC & (1<<0);
-    CCP1X = DC & (1<<1);
-    // Write to CCPR1L register
-    CCPR1L = DC >> 2;
+//void __interrupt() ISR(void){
+//    if(INTF == 1){               // Check the flag bit 
+//        RA3 = RB0;
+//        INTF = 0;
+//    }               
+//} 
+void __interrupt() ISR(void){
+
+    if(RCIF == 1){
+        data_r = RCREG;
+        RCIF = 0;
+    }
 }
 
 void main(void) {
     TRISA = 0x00;
     TRISD = 0x00;
+    TRISB = 0xFF;
     PORTA = 0x00;
     
-    // -------------[Configuration part]----------------
-    // Configure the CCP1 module for PWM operation
-    CCP1M2 = 1;
-    CCP1M3 = 1;
-    // Set CCP1 pin as output
-    TRISC2 = 0;
-    // Set the PWM period 
-    PR2 = 124;
-    // Set the Timer2 prescaler value and enable Timer2
-    T2CKPS0 = 1;
-    T2CKPS1 = 0;
-    TMR2ON = 1;
+    INTEDG = 1;                 // Interrupt edge config bit (HIGH value means interrupt occurs every rising edge)
+    
+    RCIE = 1;
+ 
+    PEIE = 1;
     EEPROM_Write(1, UID1);
    
     
@@ -92,24 +92,19 @@ void main(void) {
     
     
     while(1){
-        data_r = UART_Read();
+        RA3 = RB0;
+        if (RB0 == 1){
+            RA4 = ~RA4;
+            Rotation90(); //90 Degree            
+            Rotation0();     
+        }
         if(EEPROM_Check(data_r))  
             {   
-                TXREG = data_r;
-                
-                
-                 
-                 Rotation90(); //90 Degree
-                 
-                 Rotation0();
-                
-//             
-                  
-                
-            };
-        
-        
-       
+                TXREG = data_r;                
+                 Rotation90(); //90 Degree            
+                 Rotation0();    
+                 data_r = 0;
+            }     
     } 
     
     return;
